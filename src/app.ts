@@ -3,7 +3,7 @@ import cors from "cors";
 import type { Request,Response,RequestHandler } from "express";
 import {globalError_Middleware} from "./middleware/error_middleware.ts";
 import express from "express";
-import {product_route} from "../src/module/product/product_route.ts"
+import {product_route} from "./module/product/product_route.ts"
 const app = express();
 const port = process.env.PORT;
 
