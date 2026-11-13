@@ -1,0 +1,28 @@
+services:
+  scent_db:
+    image: postgres:16
+    container_name: scent-database
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mersad
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: scent-db
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  scent_backend:
+    build: .
+    container_name: scent-backend
+    restart: unless-stopped
+    depends_on:
+      - scent_db
+    environment:
+      DATABASE_URL: "postgresql://postgres:1234@db:5432/scent-db?schema=public"
+      PORT: "3000"
+    ports:
+      - "127.0.0.1:3000:3000"
+
+volumes:
+  postgres_data:
