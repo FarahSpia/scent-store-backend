@@ -8,7 +8,7 @@
  -- *tsx*
  -- *dotenv*
  -- *prisma + postgresql*
- -- *express-validator*
+ -- *zod*
  -- *JWT*
  -- *bcrypt*
  -- *nodemailer*
