@@ -8,12 +8,14 @@ import {
     listCategoriesSchema,
     createCategorySchema,
     categorySchema,
-    categoryIdSchema
+    categoryIdSchema,
+    slugSchema
 } from "./category_validate.ts";
 
 
 cat_route.post("/",validate(createCategorySchema),category_controller.postCategory);
 cat_route.get("/",validate(listCategoriesSchema),category_controller.getCategoryWithPagination);
+cat_route.get("/:slug",validate(slugSchema),category_controller.getCategoryBySlug);
 cat_route.delete("/:categoryId",validate(categoryIdSchema),category_controller.deleteCategory);
 cat_route.post("/:categoryId/product/:productId",validate(categorySchema),category_controller.addProductToCat)
 cat_route.delete("/:categoryId/product/:productId",validate(categorySchema),category_controller.deleteProductCategory);

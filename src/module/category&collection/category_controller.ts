@@ -19,6 +19,13 @@ const sortMap: Record<listCategoriesQuery["sort"], Prisma.CategoryOrderByWithRel
   title: { title: "asc" },
 };
 
+const productDetailInclude = {
+  variants: { orderBy: { price: "asc" as const } },
+  images: { orderBy: { sortOrder: "asc" as const } },
+  categories: { include: { category: { select: { id: true, title: true, slug: true,imageUrl:true } } } },
+} satisfies Prisma.ProductInclude;
+
+
 export const listCategories = async (query: listCategoriesQuery) => {
   const { page, limit, search, parentId, root, isActive, sort } = query;
 
@@ -60,6 +67,17 @@ export const listCategories = async (query: listCategoriesQuery) => {
       hasPrev: page > 1,
     },
   };
+};
+
+ const getCatBySlug = async (slug: string) => {
+  const cat = await prisma.category.findUnique({
+    where: { slug },
+    include: {
+        _count: { select: { products: true, children: true } },
+      },
+  });
+  if (!cat) throw new AppError("Category not found", 404, "CATEGORY_NOT_FOUND");
+  return cat;
 };
 
 
@@ -137,6 +155,12 @@ const getCategoryWithPagination = async (req: Request, res: Response) => {
     sendSuccess(res,data.items,{statusCode:200,meta:data.meta})
 };
 
+const getCategoryBySlug = async(req:Request,res:Response)=>{
+    const slug = req.params.slug as string;
+    const data = await getCatBySlug(slug);
+    sendSuccess(res,data);
+}
+
 const deleteCategory = async(req:Request,res:Response)=>{
    const {categoryId} = req.params as {categoryId:string};
 
@@ -161,6 +185,7 @@ const addProductToCat = async(req:Request,res:Response)=>{
 
 export default {
     getCategoryWithPagination,
+     getCategoryBySlug,
     postCategory,
     addProductToCat,
     deleteProductCategory,

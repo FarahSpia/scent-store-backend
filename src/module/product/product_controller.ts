@@ -61,8 +61,6 @@ const assertProduct = async (productId: string) => {
     variants: { some: hasVariantFilter ? variantWhere : { isActive: true } },
   };
 
-  console.log("categoryId:", categoryId, typeof categoryId);
-console.log(JSON.stringify(where, null, 2));
 
   const orderBy: Prisma.ProductOrderByWithRelationInput =
     sort === "rate" ? { rateAvg: "desc" }

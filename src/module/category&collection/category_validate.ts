@@ -4,6 +4,7 @@ import { z } from "zod";
 export const productIdParams = z.object({ productId: z.string().min(1) });
 export const categoryIdParams = z.object({ categoryId: z.coerce.number().min(1).positive() });
 export const categoryParams = productIdParams.extend({categoryId: z.coerce.number().min(1).positive() });
+export const slugParams = z.object({slug : z.string().min(1)});
 
 const boolFromString = z
   .enum(["true", "false"])
@@ -33,6 +34,7 @@ export const createCategorySchema = {
 export const productIdSchema = {params:productIdParams};
 export const categorySchema = {params:categoryParams};
 export const categoryIdSchema = {params:categoryIdParams}
+export const slugSchema = {params:slugParams};
 
 export type createCategoryBody = z.infer<typeof createCategorySchema.body>;
 export type listCategoriesQuery = z.infer<typeof listCategoriesSchema.query>;
