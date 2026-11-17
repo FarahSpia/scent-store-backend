@@ -32,6 +32,8 @@ product_route.delete("/:productId/variant/:variantId",validate(deleteVariantSche
 product_route.patch("/:productId",validate(updateProductSchema),product_controller.editProduct);
 product_route.post("/:productId/variant",validate(createVariantSchema),product_controller.postVariant);
 product_route.patch("/:productId/variant/:variantId",validate(updateVariantSchema),product_controller.editVariant);
+product_route.patch("/:productId/isActive",validate(deleteProductSchema),product_controller.setProductActive);
+product_route.patch("/:productId/:variantId/isActive",validate(deleteVariantSchema),product_controller.setProductVariantActive);
 
 export {
     product_route

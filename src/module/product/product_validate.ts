@@ -5,10 +5,11 @@ export const listProductsSchema = {
     page: z.coerce.number().int().min(1).default(1),
     limit: z.coerce.number().int().min(1).max(50).default(12),
     search: z.string().trim().min(1).optional(),
-    categoryId: z.string().optional(),
-    collectionId: z.string().optional(),
+    categoryId: z.coerce.number().int().positive().optional(),
+    collectionId: z.coerce.number().int().positive().optional(),
     minPrice: z.coerce.number().int().min(0).optional(),
     maxPrice: z.coerce.number().int().min(0).optional(),
+    isActive:z.enum(["true", "false"]).transform((v) => v === "true").optional(),
     inStock: z.enum(["true", "false"]).transform((v) => v === "true").optional(),
     minRate: z.coerce.number().min(0).max(5).optional(),
     sort: z
@@ -51,7 +52,7 @@ export const createProductSchema = {
 
     variants: z.array(variantSchema).min(1, "at least one variant is required"),
     // images: z.array(imageSchema).default([]),
-    categoryIds: z.array(z.string()).default([]),
+    categoryIds: z.array(z.coerce.number().int().positive()).default([]),
     // collectionIds: z.array(z.string()).default([]),
   }).superRefine((b, ctx) => {
     const skus = b.variants.map((v) => v.sku);
@@ -118,7 +119,7 @@ export const updateProductSchema = {
       howToUse: z.string(),
       warning: z.string().nullable(),
       isActive: z.boolean(),
-      categoryIds: z.array(z.string()).min(1),
+      categoryIds: z.array(z.coerce.number().int().positive()).min(1),
     })
     .partial()
     .refine((v) => Object.keys(v).length > 0, "حداقل یک فیلد بفرست"),

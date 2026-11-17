@@ -20,7 +20,7 @@ import type {
 const productDetailInclude = {
   variants: { orderBy: { price: "asc" as const } },
   images: { orderBy: { sortOrder: "asc" as const } },
-  categories: { include: { category: { select: { id: true, title: true, slug: true } } } },
+  categories: { include: { category: { select: { id: true, title: true, slug: true,imageUrl:true } } } },
 } satisfies Prisma.ProductInclude;
 
 
@@ -32,7 +32,7 @@ const assertProduct = async (productId: string) => {
 
  const listProducts = async (q: ListProductsQuery) => {
   const { page, limit, search, categoryId, collectionId,
-    minPrice, maxPrice, inStock, minRate, sort } = q;
+    minPrice, maxPrice, inStock, minRate, sort,isActive } = q;
 
 
   //varient        
@@ -45,7 +45,7 @@ const assertProduct = async (productId: string) => {
   const hasVariantFilter = Object.keys(variantWhere).length > 1;
 
   const where: Prisma.ProductWhereInput = {
-    isActive: true,
+    isActive: isActive,
     ...(search && {
       OR: [
         { title: { contains: search, mode: "insensitive" } },
@@ -60,6 +60,9 @@ const assertProduct = async (productId: string) => {
 
     variants: { some: hasVariantFilter ? variantWhere : { isActive: true } },
   };
+
+  console.log("categoryId:", categoryId, typeof categoryId);
+console.log(JSON.stringify(where, null, 2));
 
   const orderBy: Prisma.ProductOrderByWithRelationInput =
     sort === "rate" ? { rateAvg: "desc" }
@@ -260,7 +263,7 @@ const assertProduct = async (productId: string) => {
 };
 
 
-export const updateProduct = async (productId: string, input: UpdateProductInput) => {
+ const updateProduct = async (productId: string, input: UpdateProductInput) => {
   await assertProduct(productId);
   const { categoryIds, ...rest } = input;
 
@@ -286,7 +289,7 @@ export const updateProduct = async (productId: string, input: UpdateProductInput
   });
 };
 
-export const deleteProduct = async (productId: string) => {
+ const deleteProduct = async (productId: string) => {
   await assertProduct(productId);
 
   const images = await prisma.productImage.findMany({
@@ -305,12 +308,12 @@ export const deleteProduct = async (productId: string) => {
   await Promise.allSettled(images.map((i) => deleteProductImageFile(i.url)));
 };
 
-export const addVariant = async (productId: string, input: CreateVariantInput) => {
+ const addVariant = async (productId: string, input: CreateVariantInput) => {
   await assertProduct(productId);
   return prisma.productVariant.create({ data: { ...input, productId } });
 };
 
-export const updateVariant = async (
+ const updateVariant = async (
   productId: string,
   variantId: string,
   input: UpdateVariantInput
@@ -320,7 +323,7 @@ export const updateVariant = async (
   return prisma.productVariant.update({ where: { id: variantId }, data: input });
 };
 
-export const deleteVariant = async (productId: string, variantId: string) => {
+ const deleteVariant = async (productId: string, variantId: string) => {
   const v = await prisma.productVariant.findFirst({ where: { id: variantId, productId } });
   if (!v) throw new AppError("Variant not found", 404, "VARIANT_NOT_FOUND");
 
@@ -330,6 +333,22 @@ export const deleteVariant = async (productId: string, variantId: string) => {
 
   await prisma.productVariant.delete({ where: { id: variantId } });
 };
+
+const switchActiveProduct = async(productId:string)=>{
+    const p = await prisma.product.findFirst({where:{id:productId}});
+    if(!p) throw new AppError("Product not found",404,"PRODUCT_NOT_FOUND");
+
+    await prisma.product.update({where:{id:p.id},data:{isActive:!p.isActive}});
+}
+
+const switchActiveProductVariant = async(productId:string,variantId:string)=>{
+    const v = await prisma.productVariant.findFirst({where:{id:variantId,productId}});
+    if(!v) throw new AppError("Variant not found",404,"VARIANT_NOT_FOUND");
+
+    await prisma.productVariant.update({where:{id:v.id},data:{isActive:!v.isActive}});
+}
+
+
 
 /////controller
 
@@ -350,12 +369,14 @@ const getAllProductWithPagination = async (req:Request, res:Response) => {
 
 const getProductByIdCtrl = async (req: Request, res: Response) =>{
   const productId = req.params.productId as string
-  sendSuccess(res, await getProductById(productId));
+  const data = await getProductById(productId)
+  sendSuccess(res,data );
 }
 
 const getProductBySlugCtrl = async (req: Request, res: Response) =>{
   const slug = req.params.slug as string;
-  sendSuccess(res, await getProductBySlug(slug));
+  const data = await getProductBySlug(slug)
+  sendSuccess(res,data);
 }
 
 const postProduct = async (req: Request, res: Response) => {
@@ -387,7 +408,8 @@ const setProductImageMain = async (req: Request, res: Response) => {
 
  const editProduct = async (req: Request, res: Response) =>{
   const productId = req.params.productId as string;
-  sendSuccess(res, await updateProduct(productId, req.body), { message: "Product updated" });
+  const data = await updateProduct(productId, req.body)
+  sendSuccess(res,data , { message: "Product updated" });
 }
 
  const removeProduct = async (req: Request, res: Response) => {
@@ -398,12 +420,14 @@ const setProductImageMain = async (req: Request, res: Response) => {
 
  const postVariant = async (req: Request, res: Response) =>{
   const productId = req.params.productId as string;
-  res.status(201) && sendSuccess(res, await addVariant(productId, req.body), { message: "Variant created" });
+  const data = await addVariant(productId, req.body)
+  res.status(201) && sendSuccess(res,data , { message: "Variant created" });
 }
 
  const editVariant = async (req: Request, res: Response) =>{
   const {variantId,productId} = req.params as {productId:string,variantId:string};
-  sendSuccess(res, await updateVariant(productId,variantId, req.body), { message: "Variant updated" });
+  const data =  await updateVariant(productId,variantId, req.body)
+  sendSuccess(res,data, { message: "Variant updated" });
 }
 
 const removeVariant = async (req: Request, res: Response) => {
@@ -411,6 +435,19 @@ const removeVariant = async (req: Request, res: Response) => {
   await deleteVariant(productId,variantId);
   return sendSuccess(res, null, { message: "Variant deleted" });
 };
+
+const setProductActive = async(req:Request,res:Response) => {
+    const productId = req.params.productId as string;
+    await switchActiveProduct(productId);
+    sendSuccess(res,null,{message:"product active situation changed"});
+}
+
+const setProductVariantActive = async(req:Request,res:Response) => {
+    const {productId,variantId} = req.params as {productId:string,variantId:string}
+    await switchActiveProductVariant(productId,variantId);
+    sendSuccess(res,null,{message:"product active situation changed"});
+}
+
 
 
 export default {
@@ -426,7 +463,8 @@ export default {
     removeProduct,
     postVariant,
     editVariant,
-    removeVariant
+    removeVariant,
+    setProductActive,
+    setProductVariantActive
 
-    
 }

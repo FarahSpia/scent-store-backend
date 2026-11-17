@@ -213,7 +213,7 @@ model ProductImage {
 }
 
 model Category {
-  id          String @id @default(uuid())
+  id          Int @id @default(autoincrement())
 
   title       String
   slug        String @unique
@@ -221,7 +221,7 @@ model Category {
   description String?
   imageUrl    String?
 
-  parentId    String?
+  parentId    Int?
   parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
   children    Category[] @relation("CategoryTree")
 
@@ -237,7 +237,7 @@ model Category {
 
 model ProductCategory {
   productId  String
-  categoryId String
+  categoryId Int
 
   product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
@@ -247,7 +247,7 @@ model ProductCategory {
 }
 
 model Collection {
-  id          String @id @default(uuid())
+  id          Int @id @default(autoincrement())
 
   title       String
   slug        String @unique
@@ -269,7 +269,7 @@ model Collection {
 
 model ProductCollection {
   productId    String
-  collectionId String
+  collectionId Int
 
   product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
   collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
