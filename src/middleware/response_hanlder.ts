@@ -22,7 +22,7 @@ export interface ErrorResponse {
 const sendSuccess = <T>(
   res: Response,
   data: T | null = null,
-  options: { statusCode?: number; message?: string; meta?: SuccessResponse<T>["meta"] } = {}
+  options: { statusCode?: number;redirect?:string ;message?: string; meta?: SuccessResponse<T>["meta"] } = {}
 ) => {
   const { statusCode = 200, message, meta } = options;
   const body: SuccessResponse<T> = { success: true, message, data, meta };

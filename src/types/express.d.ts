@@ -1,4 +1,4 @@
-import type { tokenType } from "./model_type.ts";
+import type { tokenType } from "./public_Types.ts";
 
 declare global {
   namespace Express {

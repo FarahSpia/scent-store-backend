@@ -114,8 +114,8 @@ model User {
   orders         Order[]
   comments       Comment[]
   commentReplies Reply[]
+  refreshToken   RefreshToken?
 
-  optCode      otpCode[]
   like         LikeComment[]
 
   createdAt     DateTime @default(now())
@@ -127,13 +127,23 @@ model User {
 
 model otpCode {
   id        Int      @id @default(autoincrement())
-  userId  String   
+  phoneNumber String   
   otpCode   String
   expiresAt DateTime
-  used      Boolean  @default(false)
+  attempts  Int  @default(0)
   createdAt DateTime @default(now())
 
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RefreshToken{
+  id           String      @id @default(uuid())
+  refreshToken String   @unique
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model Product {
