@@ -54,7 +54,6 @@ const listUsers = async(q:ListUsersQuery)=>{
 const getUserByIdCtrl = async(userId:string)=>{
 
     const userDetailInclude = {
-      cartItems:true,
       favorites:true,
       comments:true,
       city:true,
@@ -91,6 +90,9 @@ const getUserById = async(req:Request,res:Response)=>{
      const data = await getUserByIdCtrl(userId);
      sendSuccess(res,data);
 }
+
+
+
 
 
 export default {

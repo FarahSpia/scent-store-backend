@@ -30,7 +30,7 @@ const assertProduct = async (productId: string) => {
 };
 
 
- const listProducts = async (q: ListProductsQuery) => {
+ const listProducts = async (q: ListProductsQuery,userId:string | undefined) => {
   const { page, limit, search, categoryId, collectionId,
     minPrice, maxPrice, inStock, minRate, sort,isActive } = q;
 
@@ -61,8 +61,8 @@ const assertProduct = async (productId: string) => {
     variants: { some: hasVariantFilter ? variantWhere : { isActive: true } },
   };
 
-  console.log("categoryId:", categoryId, typeof categoryId);
-console.log(JSON.stringify(where, null, 2));
+  // console.log("categoryId:", categoryId, typeof categoryId);
+  // console.log(JSON.stringify(where, null, 2));
 
   const orderBy: Prisma.ProductOrderByWithRelationInput =
     sort === "rate" ? { rateAvg: "desc" }
@@ -76,7 +76,8 @@ console.log(JSON.stringify(where, null, 2));
     shortDescription: true,
     rateAvg: true,
     rateCount: true,
-    images: true, 
+    images: {where:{isMain:true}},
+    favorites: userId ? {where:{userId},select:{productId:true}} : false, 
     variants: {
       where: { isActive: true },
       select: { id: true, title: true, price: true, discount: true, stock: true, isDefault: true },
@@ -98,6 +99,7 @@ console.log(JSON.stringify(where, null, 2));
     return {
       ...p,
       variants,
+      isFavorites:p.favorites?.length > 0,
       minPrice: finalPrices.length ? Math.min(...finalPrices) : null,
       maxPrice: finalPrices.length ? Math.max(...finalPrices) : null,
       inStock: variants.some((v) => v.stock > 0),
@@ -355,9 +357,11 @@ const switchActiveProductVariant = async(productId:string,variantId:string)=>{
 const getAllProductWithPagination = async (req:Request, res:Response) => {
     
    const q = res.locals.query as ListProductsQuery;
-  const { products, total } = await listProducts(q);
+   const userId = req.user?.userId ;
+  const { products, total } = await listProducts(q,userId);
+  
 
-    return sendSuccess(res, products, {
+     sendSuccess(res, products, {
       meta: {
         page: q.page,
         limit: q.limit,
