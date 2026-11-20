@@ -2,7 +2,7 @@ import "dotenv/config"
 import cors from "cors";
 import type { Request,Response,RequestHandler } from "express";
 // import {globalError_Middleware} from "./middleware/error_middleware.ts";
-import { errorHandler } from "./middleware/response_hanlder.ts";
+import { global_errorHandler } from "./middleware/response_hanlder.ts";
 import express from "express";
 
 import {product_route} from "./module/product/product_route.ts"
@@ -30,5 +30,5 @@ app.get("/",(req:Request,res:Response)=>{
 
 
 
-app.use(errorHandler);
+app.use(global_errorHandler);
 app.listen(port,()=>console.log(`server is running on port:${port}`));

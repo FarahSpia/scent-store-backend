@@ -9,6 +9,17 @@ const userIdParams = z.object({userId:z.string().uuid()});
          .refine((phone) => /^09\d{9}$/.test(phone)),
         })
 
+const refreshTokenBody = z.object({refreshToken:z.string().min(1)});
+const userIdHeaders = z.object({userId:z.string().min(1).uuid()});
+
+export const refreshTokenSchema = {body:refreshTokenBody};
+export const userIdUsers = {user:userIdHeaders};
+
+export const refresh_TokenSchema = {
+   body:refreshTokenBody,
+   user:userIdHeaders
+}
+
 export const otpCodeSchema = {body:otpCodeBody};
 export const phoneNumberSchema = {body:phoneNumberBody};        
 export const userIdSchema = {params:userIdParams};

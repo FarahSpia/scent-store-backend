@@ -1,25 +1,24 @@
-import JWT from "../util/token.util.ts";
-import {custom_Error} from "./response_hanlder.ts"
+import {verify_accessToken} from "../util/token.util.ts";
+import {AppError} from "./response_hanlder.ts"
 import type { NextFunction,Request,Response } from "express";
 
-import type { AuthRequest,tokenType} from "../types/model_type.ts";
+import type { tokenType} from "../types/public_Types.ts";
 
 
-const authenticate_access = (req:Request,res:Response,next:NextFunction)=>{
+const authenticate = (req:Request,res:Response,next:NextFunction)=>{
     
      let token = req.headers['authorization'];
      token = token?.split(" ")[1];
    
     if(!token) {
-      custom_Error("authentication failed,no token provided",401);
-      return
+      throw new AppError("authentication failed,no token provided",401);
     }
 
-    const checkToken = JWT.verify_accessToken(token) as tokenType;
-    if(!checkToken) custom_Error("the token is expired or invalid",401);
+    const checkToken = verify_accessToken(token) as tokenType;
+    if(!checkToken) throw new AppError("the token is expired or invalid",401);
 
     req.user = {
-         personId:checkToken.personId,
+         userId:checkToken.userId,
          role:checkToken.role 
     }
 
@@ -28,34 +27,10 @@ const authenticate_access = (req:Request,res:Response,next:NextFunction)=>{
 
 }
 
-const authenticate_temp = (req:Request,res:Response,next:NextFunction)=>{
-    
-     let token = req.headers['authorization'];
-     token = token?.split(" ")[1];
-   
-    if(!token) {
-      custom_Error("authentication failed,no token provided",401);
-      return
-    }
-
-    const checkToken = JWT.verify_tempToken(token) as tokenType;
-    if(!checkToken) {
-       custom_Error("the token is expired or invalid",401);
-       return
-    };
-
-    req.user = {
-         personId:checkToken.personId
-    }
-
-
-    next();
-
-}
 
 
 
 export {
-    authenticate_access,
-    authenticate_temp
+    authenticate,
+    
 };

@@ -1,9 +1,10 @@
 import {prisma} from "../../util/prisma.util.ts";
-import { Prisma } from "../../generated/prisma/client.ts";
+import { Prisma, UserRole } from "../../generated/prisma/client.ts";
 
 import type { Request,Response } from "express";
 import {sendSuccess,AppError} from "../../middleware/response_hanlder.ts";
 
+import {tokenType} from "../../types/public_Types.ts";
 
 import { 
     create_accessToken,
@@ -18,6 +19,8 @@ import {
     generateCode,
     codeProperties
  } from "../../util/code.util.ts";
+import { userInfo } from "node:os";
+import { success } from "zod";
 
 
 //Logic
@@ -98,6 +101,30 @@ const LoginChecker = async(phoneNumber:string,otpCode:string)=>{
 
 }
 
+interface refTokenResponse {
+    accessToken?:string,
+    refreshToken?:string,
+}
+
+const refresh_Token = async(refToken:string,user:tokenType):Promise<refTokenResponse | null>=>{
+    const rf = await prisma.refreshToken.findUnique({where:{userId:user.userId}});
+    if(!rf ) throw new AppError("there is no refreshToken,user needs to login at least once",404,"REFRESHTOKEN_NOT_FOUND");
+    
+    if(rf.refreshToken !== hash_refreshToken(refToken)|| rf.expiresAt.getTime() < Date.now())
+         throw new AppError("refreshToken isn't valid",400,"REFRESHTOKEN_INVALID");
+
+    const refreshToken = create_refreshToken();
+
+    const rfToken = await prisma.refreshToken.update({
+        where:{userId:user.userId},
+        data:{refreshToken :refreshToken,expiresAt:tokenExpiry()},
+        select:{refreshToken:true}
+    })
+
+    const accessToken = create_accessToken({userId:user.userId,role:user.role});
+
+   return {accessToken,refreshToken};
+}
 
 
 //controller
@@ -116,9 +143,18 @@ const Login_Completation = async(req:Request,res:Response)=>{
     sendSuccess(res,data,{statusCode:200,message:"Login done successfully",redirect:"/home"});
 }
 
+const refreshAccessToken = async(req:Request,res:Response)=>{
+    const {refreshToken} = req.body;
+    const user = req?.user as tokenType;
+    const data = await refresh_Token(refreshToken,user);
+
+     sendSuccess(res,data);
+}
+
 
 export default {
      Login_Request,
-     Login_Completation
+     Login_Completation,
+     refreshAccessToken
 
 }

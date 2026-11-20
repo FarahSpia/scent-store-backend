@@ -34,14 +34,14 @@ class AppError extends Error {
     public message: string,
     public statusCode = 500,
     public code = "INTERNAL_ERROR",
-    public details?: { field?: string; message: string }[]
+    public details?: { field?: string; message: string;redirect?:string }[]
   ) {
     super(message);
     Object.setPrototypeOf(this, AppError.prototype);
   }
 }
 
-const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
+const global_errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
   const isApp = err instanceof AppError;
   const statusCode = isApp ? err.statusCode : 500;
 
@@ -92,7 +92,7 @@ export {
     
     sendSuccess,
     AppError,
-    errorHandler,
+    global_errorHandler,
     validate
   
 };

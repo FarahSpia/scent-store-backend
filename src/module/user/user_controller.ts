@@ -61,7 +61,7 @@ const getUserByIdCtrl = async(userId:string)=>{
       orders:true
     } satisfies Prisma.UserInclude;
 
-     const u = await prisma.product.findUnique({
+     const u = await prisma.user.findUnique({
     where: { id: userId },
     include: userDetailInclude,
   });

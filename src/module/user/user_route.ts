@@ -8,9 +8,11 @@ import {
     listUsersSchema,
     userIdSchema
 } from "./user_validate.ts"
+import { authorize } from "../../middleware/authorize.ts";
+import { authenticate } from "../../middleware/authenticate.ts";
 
-user_route.get("/",validate(listUsersSchema),user_controller.getAllUserWithPagination);
-user_route.get("/:userId",validate(userIdSchema),user_controller.getUserById);
+user_route.get("/",authenticate,authorize(["User","Admin"]),validate(listUsersSchema),user_controller.getAllUserWithPagination);
+user_route.get("/:userId",authenticate,authorize(["User","Admin"]),validate(userIdSchema),user_controller.getUserById);
 
 
 

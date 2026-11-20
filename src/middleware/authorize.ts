@@ -1,23 +1,23 @@
-import {custom_Error} from "./response_hanlder.ts"
+import {AppError} from "./response_hanlder.ts"
 import type { NextFunction,Request,Response } from "express";
 
-import type { AuthRequest,tokenType} from "../types/model_type.ts";
+import type {tokenType,userRole} from "../types/public_Types.ts";
 
-import { AccountType } from "../types/model_type.ts";
 
-const authorize = (roles:AccountType[])=> {
+
+const authorize = (roles:userRole[])=> {
    return (req:Request,res:Response,next:NextFunction)=>{
     
     const user = req.user as tokenType;
-    const Role = user.role as AccountType;
+    const Role = user.role as userRole;
 
     if (!user) {
-      custom_Error("Unauthorized", 401);
-      return;
+      throw new AppError("Unauthorized", 401);
+      
     }
 
     if(roles.length &&  !roles.includes(Role)){
-       custom_Error("you dont have premission",401);
+       throw new AppError("you dont have premission",401);
     }
 
     next();
