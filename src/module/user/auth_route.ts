@@ -13,7 +13,7 @@ import { authenticate } from "../../middleware/authenticate.ts";
 
 auth_route.post("/login",validate(LoginRequestSchema),auth_controller.Login_Request);
 auth_route.post("/login/otpCode",validate(LoginCompletationSchema),auth_controller.Login_Completation);
-auth_route.post("/refreshToken",authenticate,validate(refresh_TokenSchema),auth_controller.refreshAccessToken);
+auth_route.post("/refreshToken",validate(refresh_TokenSchema),auth_controller.refreshAccessToken);
 
 export {
     auth_route

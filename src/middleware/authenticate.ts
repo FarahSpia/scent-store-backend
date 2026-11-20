@@ -27,10 +27,36 @@ const authenticate = (req:Request,res:Response,next:NextFunction)=>{
 
 }
 
+const optionalAuthenticate = (
+  req: Request,
+  _res: Response,
+  next: NextFunction
+) => {
+  const authorization = req.headers.authorization;
+  const [scheme, token] = authorization?.split(" ") ?? [];
+
+  
+  if (scheme?.toLowerCase() !== "bearer" || !token) {
+    return next();
+  }
+
+  try {
+    const checkToken = verify_accessToken(token) as tokenType;
+
+    req.user = {
+      userId: checkToken.userId,
+      role: checkToken.role,
+    };
+  } catch {}
+
+  return next();
+};
+
 
 
 
 export {
     authenticate,
+     optionalAuthenticate
     
 };

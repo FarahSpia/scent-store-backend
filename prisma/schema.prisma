@@ -437,13 +437,14 @@ model Comment {
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  rate      Int? 
+  rate      Int
   content   String
-  like      Int
-  dislike   Int
+  like      Int @default(0)
+  dislike   Int @default(0)
 
 
   replies   Reply[]
+  likes   LikeComment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -453,13 +454,17 @@ model Comment {
 }
 
 model LikeComment {
-    id   String @id @default(uuid())
     userId  String 
     user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    commentId  Int
+    commentId  String
+    comment Comment @relation(fields: [commentId],references: [id],onDelete: Cascade)
+
     type    LikeType
     createdAt  DateTime @default(now())
+
+    @@id([userId,commentId])
+    @@index([commentId])
 }
 
 model Reply {

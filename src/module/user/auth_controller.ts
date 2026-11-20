@@ -106,22 +106,28 @@ interface refTokenResponse {
     refreshToken?:string,
 }
 
-const refresh_Token = async(refToken:string,user:tokenType):Promise<refTokenResponse | null>=>{
-    const rf = await prisma.refreshToken.findUnique({where:{userId:user.userId}});
-    if(!rf ) throw new AppError("there is no refreshToken,user needs to login at least once",404,"REFRESHTOKEN_NOT_FOUND");
+const refresh_Token = async(refToken:string):Promise<refTokenResponse | null>=>{
+    const hashedToken =  hash_refreshToken(refToken);
+
+    const rf = await prisma.refreshToken.findFirst({where:{refreshToken:hashedToken}
+        ,include:{user:{select:{role:true}}}
+    });
     
-    if(rf.refreshToken !== hash_refreshToken(refToken)|| rf.expiresAt.getTime() < Date.now())
-         throw new AppError("refreshToken isn't valid",400,"REFRESHTOKEN_INVALID");
+     if(!rf || rf.expiresAt.getTime() < Date.now()){
+         throw new AppError("refreshToken isn't valid or expired",400,"REFRESHTOKEN_INVALID");
+     }
+    
 
     const refreshToken = create_refreshToken();
 
+
     const rfToken = await prisma.refreshToken.update({
-        where:{userId:user.userId},
-        data:{refreshToken :refreshToken,expiresAt:tokenExpiry()},
+        where:{userId:rf.userId},
+        data:{refreshToken :hash_refreshToken(refreshToken),expiresAt:tokenExpiry()},
         select:{refreshToken:true}
     })
 
-    const accessToken = create_accessToken({userId:user.userId,role:user.role});
+    const accessToken = create_accessToken({userId:rf.userId,role:rf.user.role});
 
    return {accessToken,refreshToken};
 }
@@ -145,8 +151,7 @@ const Login_Completation = async(req:Request,res:Response)=>{
 
 const refreshAccessToken = async(req:Request,res:Response)=>{
     const {refreshToken} = req.body;
-    const user = req?.user as tokenType;
-    const data = await refresh_Token(refreshToken,user);
+    const data = await refresh_Token(refreshToken);
 
      sendSuccess(res,data);
 }

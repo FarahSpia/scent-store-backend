@@ -18,6 +18,7 @@ import type {
 //logic
 
 const productDetailInclude = {
+  comments : {omit:{userId:true,productId:true}},
   variants: { orderBy: { price: "asc" as const } },
   images: { orderBy: { sortOrder: "asc" as const } },
   categories: { include: { category: { select: { id: true, title: true, slug: true,imageUrl:true } } } },

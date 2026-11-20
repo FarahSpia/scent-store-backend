@@ -4,6 +4,7 @@ const product_route = express.Router();
 import { productImage_Uploader } from "../../util/file.util.ts";
 import product_controller from "./product_controller.ts";
 import { validate } from "../../middleware/response_hanlder.ts";
+import { optionalAuthenticate,authenticate } from "../../middleware/authenticate.ts";
 import { 
     listProductsSchema,
     createProductSchema,
@@ -19,7 +20,7 @@ import {
     getProductBySlugSchema
 } from "./product_validate.ts";
 
-product_route.get("/",validate(listProductsSchema),product_controller.getAllProductWithPagination);
+product_route.get("/",optionalAuthenticate,validate(listProductsSchema),product_controller.getAllProductWithPagination);
 product_route.get("/:productId",validate(getProductByIdSchema),product_controller.getProductByIdCtrl);
 product_route.get("/slug/:slug",validate(getProductBySlugSchema),product_controller.getProductBySlugCtrl);
 product_route.post("/",validate(createProductSchema),product_controller.postProduct);
