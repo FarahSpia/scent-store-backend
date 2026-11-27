@@ -12,6 +12,10 @@ import {user_route} from "./module/user/user_route.ts";
 import { fav_route } from "./module/product_intraction/favorite/favorite_route.ts";
 import { comment_route } from "./module/product_intraction/comment/comment_route.ts";
 import { order_route } from "./module/order/order_route.ts";
+import { shipping_route } from "./module/order_Dependencies/shipping_method/shipping_route.ts";
+import { discount_route } from "./module/order_Dependencies/discount_code/discount_route.ts";
+import { province_route } from "./module/order_Dependencies/province/province_route.ts";
+import { city_route } from "./module/order_Dependencies/city/city_route.ts";
 
 const app = express();
 const port = process.env.PORT;
@@ -27,6 +31,10 @@ app.use("/product",product_route);
 app.use("/product/comment",comment_route);
 app.use("/favorite",fav_route);
 app.use("/order",order_route);
+app.use("/shipping-method",shipping_route);
+app.use("/discount",discount_route);
+app.use("/province",province_route);
+app.use("/city",city_route);
 
 
 app.get("/",(req:Request,res:Response)=>{
