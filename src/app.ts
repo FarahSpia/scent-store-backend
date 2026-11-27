@@ -11,6 +11,7 @@ import {auth_route} from "./module/user/auth_route.ts";
 import {user_route} from "./module/user/user_route.ts";
 import { fav_route } from "./module/product_intraction/favorite/favorite_route.ts";
 import { comment_route } from "./module/product_intraction/comment/comment_route.ts";
+import { order_route } from "./module/order/order_route.ts";
 
 const app = express();
 const port = process.env.PORT;
@@ -25,6 +26,7 @@ app.use("/category",cat_route);
 app.use("/product",product_route);
 app.use("/product/comment",comment_route);
 app.use("/favorite",fav_route);
+app.use("/order",order_route);
 
 
 app.get("/",(req:Request,res:Response)=>{
